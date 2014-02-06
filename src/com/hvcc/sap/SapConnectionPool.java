@@ -36,13 +36,13 @@ public class SapConnectionPool {
 	public static SapConnectionPool getInstance() throws Exception {
 		if (instance == null) { 
 		      try {
-				String sID = "HGD";
+				String sID = "HCP";
 				int sMaxCon = 10;
 				String sClient = "100";
-				String sUser = "RFC_USER";
-				String sPassword = "1234qwer";
+				String sUser = "MES_USER";
+				String sPassword = "1qaz2wsx";
 				String sLanguage = null;
-				String sHostName = "190.1.5.76";
+				String sHostName = "190.1.5.170";
 				String sSystem = "00";
 				instance = new SapConnectionPool(sID, sMaxCon, sClient, sUser, sPassword, sLanguage, sHostName, sSystem);
 		      } catch(Exception e) {
