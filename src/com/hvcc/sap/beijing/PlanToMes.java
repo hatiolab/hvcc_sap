@@ -22,7 +22,7 @@ import com.hvcc.sap.RfcSearcher;
 public class PlanToMes {
 	
 	private static final Logger LOGGER = Logger.getLogger(PlanToMes.class);
-	public static final String INSERT_SQL = "INSERT INTO INF_SAP_PLAN(IFSEQ, WERKS, ARBPL, EQUNR, MATNR, KUNNR, VERID, DISPD, ZSHIFTSEQ1, ZSHIFT1, ZSHIFTSEQ2, ZSHIFT2, ZSHIFTSEQ3, ZSHIFT3, CRUSR, CRDAT, CRTIM, EDUSR, EDDAT, EDTIM, IFRESULT, IFFMSG, MES_STAT, MES_UPDDT) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATE)";
+	public static final String INSERT_SQL = "INSERT INTO INF_SAP_PLAN(IFSEQ, WERKS, ARBPL, EQUNR, MATNR, KUNNR, VERID, DISPD, ZSHIFTSEQ1, ZSHIFT1, ZSHIFTSEQ2, ZSHIFT2, ZSHIFTSEQ3, ZSHIFT3, ERNAM, ERDAT, ERZET, AENAM, AEDAT, AEZET, IFRESULT, IFFMSG, MES_STAT, MES_UPDDT) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATE)";
 	public static final String RFC_FUNC_NAME = "ZPPG_EA_PROD_PLANNING";
 	public static final String RFC_OUT_TABLE = "ET_PLAN";
 	
