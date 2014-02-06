@@ -40,7 +40,7 @@ public class MesSearcher {
 			
 			while(rs.next()) {
 				Map<String, Object> record = new HashMap<String, Object>();
-				for(int i = 0 ; i < columnCnt ; i++) {
+				for(int i = 1 ; i <= columnCnt ; i++) {
 					String column = rsmd.getColumnName(i);
 					Object value = rs.getObject(column);
 					record.put(column, value);

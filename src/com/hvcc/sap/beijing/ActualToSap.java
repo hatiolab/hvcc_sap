@@ -4,7 +4,6 @@
 package com.hvcc.sap.beijing;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -12,7 +11,7 @@ import java.util.Map;
 import org.jboss.logging.Logger;
 
 import com.hvcc.sap.MesSearcher;
-import com.hvcc.sap.RfcSearcher;
+import com.hvcc.sap.RfcInvoker;
 
 /**
  * Actual MES To SAP
@@ -30,20 +29,13 @@ public class ActualToSap {
 	 * @return
 	 * @throws Exception
 	 */
-	public Map<String, Object> callRfc(List<Map<String, Object>> actuals) throws Exception {
-		Map<String, Object> inputParams = new HashMap<String, Object>();
-		inputParams.put("IV_WERKS", "GT10");
-		inputParams.put("IV_FDATE", "20140205");
-		inputParams.put("IV_TDATE", "20140205");
-		// 처음 요청일 경우 blank, 재전송 요청일 경우 'X'
-		inputParams.put("IV_CHECK", "");
-
+	public Map<String, Object> callRfc(Map<String, Object> inputParams) throws Exception {
 		List<String> outputParams = new ArrayList<String>();
-		outputParams.add("EV_IFRESULT");
-		outputParams.add("EV_IFMSG");
+		outputParams.add("ES_RESULT");
+		outputParams.add("EV_IFSEQ");
 		
 		LOGGER.info("RFC [" + RFC_FUNC_NAME + "] Call!");
-		Map<String, Object> output = new RfcSearcher().callFunction(RFC_FUNC_NAME, inputParams, outputParams, null);
+		Map<String, Object> output = new RfcInvoker().callFunction(RFC_FUNC_NAME, "IS_ACT", inputParams, outputParams);
 		return output;
 	}
 	
@@ -53,7 +45,7 @@ public class ActualToSap {
 	 * @throws Exception
 	 */
 	public List<Map<String, Object>> selectActuals() throws Exception {
-		String sql = "SELECT WORKCENTER_ID, OPERATION_ID, MACHINE_ID, CUSTOMER_ID, PRODUCT_ID, SUM(ACTUAL_QTY) ACTUAL_QTY FROM PROD_ORDERS WHERE ORDER_DATE = DATE'2013-07-14' GROUP BY WORKCENTER_ID, OPERATION_ID, MACHINE_ID, CUSTOMER_ID, PRODUCT_ID"; 
+		String sql = "SELECT '001' AS IFSEQ, 'GT10' AS WERKS, '6ATLA' AS ARBPL, '1' AS LOGRP, 'A1' AS VAART, 'F124ATBAA05' AS MATNR, '20140205' AS BUDAT, '20140205' AS PDDAT, 100 AS ERFMG FROM DUAL"; 
 		return new MesSearcher().search(sql);
 	}
 	
@@ -65,13 +57,17 @@ public class ActualToSap {
 	@SuppressWarnings("unchecked")
 	public void execute() {
 		Map<String, Object> output = null;
-		int resultCount = 0;
 
 		try {
 			List<Map<String, Object>> list = this.selectActuals();
-				
+			Map<String, Object> inputParam = list.get(0);
+			this.showMap(inputParam);
+			output = this.callRfc(inputParam);
+			this.info(output.get("EV_IFSEQ").toString());
+			
 		} catch (Exception e) {
-			System.out.println("Failed to get Plans From SAP!");
+			System.out.println("Failed to Actual Interface");
+			e.printStackTrace();
 			LOGGER.error(e);
 		}	
 	}

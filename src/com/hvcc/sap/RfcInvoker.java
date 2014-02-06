@@ -30,7 +30,7 @@ public class RfcInvoker {
 	 * @return
 	 * @throws Exception
 	 */
-	public Map<String, Object> callFunction(String funcName, String structureName, List<Map<String, Object>> inputParams, List<String> outputParams) throws Exception {
+	public Map<String, Object> callFunction(String funcName, String structureName, Map<String, Object> inputParams, List<String> outputParams) throws Exception {
 		
 		Map<String, Object> retVal = new HashMap<String, Object>();
 		SapConnectionPool	sapPool		= null;
@@ -52,17 +52,15 @@ public class RfcInvoker {
 
 			JCO.ParameterList input = function.getImportParameterList();
 			if(inputParams != null && !inputParams.isEmpty()) {
-				for(int i = 0 ; i < inputParams.size() ; i++) {
-					Map<String, Object> inputParam = inputParams.get(i);
-					Structure st = input.getStructure(structureName);
-					Iterator<String> keyIter = inputParam.keySet().iterator();
-					while(keyIter.hasNext()) {
-						String key = keyIter.next();
-						Object value = inputParam.get(key);
-						st.setValue(value, key);
-					}
-					input.appendValue(structureName, st);
+				Structure st = input.getStructure(structureName);
+				Iterator<String> keyIter = inputParams.keySet().iterator();
+				while(keyIter.hasNext()) {
+					String key = keyIter.next();
+					Object value = inputParams.get(key);
+					st.setValue(value, key);
 				}
+				
+				input.setValue(st, structureName);
 			}
 
 			connection.execute(function);
