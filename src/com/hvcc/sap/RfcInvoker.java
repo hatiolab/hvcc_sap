@@ -3,7 +3,6 @@
  */
 package com.hvcc.sap;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -11,7 +10,6 @@ import java.util.Map;
 
 import com.sap.mw.jco.IRepository;
 import com.sap.mw.jco.JCO;
-import com.sap.mw.jco.JCO.Field;
 import com.sap.mw.jco.JCO.Structure;
 
 /**

@@ -54,7 +54,6 @@ public class ActualToSap {
 	 * 
 	 * @throws Exception
 	 */
-	@SuppressWarnings("unchecked")
 	public void execute() {
 		Map<String, Object> output = null;
 
