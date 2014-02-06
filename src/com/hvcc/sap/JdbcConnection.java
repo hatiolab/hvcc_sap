@@ -14,9 +14,9 @@ import java.sql.DriverManager;
 public class JdbcConnection implements IMesConnection {
 	
 	public static final String DRIVER = "oracle.jdbc.driver.OracleDriver";
-	public static final String URL = "jdbc:oracle:thin:@localhost:1521:ORCL";
-	public static final String USER = "HVCCB_MES";
-	public static final String PASSWORD = "HVCCB_MES";
+	public static final String URL = "jdbc:oracle:thin:@172.20.9.1:1521:HMES";
+	public static final String USER = "HVCCD_MES";
+	public static final String PASSWORD = "HVCCD_MES";
 	
 	@Override
 	public Connection getConnection() throws Exception {

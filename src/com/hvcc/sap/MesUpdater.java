@@ -39,11 +39,12 @@ public class MesUpdater {
 	        	for(int i = 0 ; i < list.size() ; i++) {
 	        		pstmt.setObject(i + 1, list.get(i));
 	        	}
+	        	processedCount += pstmt.executeUpdate();
 	        }
 	        
-	        processedCount = pstmt.executeUpdate();
             conn.commit();
 	    } catch (Exception e) {
+	    	conn.rollback();
 	    	throw e;
 	    	
 	    } finally {
