@@ -11,7 +11,7 @@ public class RfcTest {
 		String input1Name = "IV_BUKRS";
 		String input2Name = "IV_LANGU";
 		String output1Name = "E_MSGE";
-		String output2Name = "ET_OUT";
+		//String output2Name = "ET_OUT";
 
 		SapConnectionPool	sapPool		= null;
 		JCO.Client			mConnection	= null;
@@ -43,8 +43,8 @@ public class RfcTest {
 			System.out.println("Output1 : " + out1Obj.toString());
 			
 			System.out.println("Table : ET_OUT ----------------------------------");
-			int etOutFieldCount = outTable.getFieldCount();
-			int etOutColumnCount = outTable.getNumColumns();
+			//int etOutFieldCount = outTable.getFieldCount();
+			//int etOutColumnCount = outTable.getNumColumns();
 			int etOutRowCount = outTable.getNumRows();
 			
 			for(int i = 0 ; i < etOutRowCount ; i++) {
