@@ -5,6 +5,7 @@ package com.hvcc.sap;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.Statement;
 import java.util.Iterator;
 import java.util.List;
 
@@ -60,5 +61,30 @@ public class MesUpdater {
 	    }
 	    
 	    return processedCount;
+	}
+	
+	public boolean update(String sql) throws Exception {
+		Connection conn = MesConnectionFactory.getInstance().getConnection();
+		Statement stmt = null;
+		boolean result = false;
+		
+	    try {
+	        stmt = conn.createStatement();
+	        result = stmt.execute(sql);
+	        
+	    } catch (Exception e) {
+	    	throw e;
+	    	
+	    } finally {	    	
+	    	if(stmt != null) {
+	    		stmt.close();
+	    	}
+	    	
+	    	if(conn != null) {
+	    		conn.close();
+	    	}
+	    }
+	    
+	    return result;
 	}
 }
