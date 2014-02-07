@@ -45,7 +45,7 @@ public class ScrapToSap {
 	 * @throws Exception
 	 */
 	public List<Map<String, Object>> selectScraps() throws Exception {
-		String sql = "SELECT MES_ID, IFSEQ, WERKS, ARBPL, EQUNR, LOGRP, VAART, ZVAART, MATNR, IDNRK, BUDAT, PDDAT, ERFMG FROM INF_SAP_SCRAP WHERE MES_STAT = 'N'";
+		String sql = "SELECT MES_ID, IFSEQ, WERKS, ARBPL, EQUNR, TRIM(LOGRP) LOGRP, VAART, ZVAART, MATNR, IDNRK, BUDAT, PDDAT, ERFMG FROM INF_SAP_SCRAP WHERE IFRESULT = 'N'";
 		return new MesSearcher().search(sql);
 	}
 	
@@ -69,11 +69,18 @@ public class ScrapToSap {
 	 */
 	public void execute() {
 		try {
-			List<Map<String, Object>> list = this.selectScraps();
-			Map<String, Object> inputParam = list.get(0);
-			String mesId = (String)inputParam.remove("MES_ID");
-			Map<String, Object> output = this.executeRecord(mesId, inputParam);
-			this.info(output.get("EV_IFSEQ").toString());
+			List<Map<String, Object>> scraps = this.selectScraps();
+			if(!scraps.isEmpty()) {
+				int scrapCount = scraps.size();
+				for(int i = 0 ; i < scrapCount ; i++) {
+					Map<String, Object> inputParam = scraps.get(i);
+					String mesId = (String)inputParam.remove("MES_ID");
+					Map<String, Object> output = this.executeRecord(mesId, inputParam);
+					this.info(output.get("EV_IFSEQ").toString());
+				}
+			} else {
+				this.info("No scrap data to interface!");
+			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
 			LOGGER.error(ex);
@@ -97,7 +104,7 @@ public class ScrapToSap {
 	
 	private void info(String msg) {
 		LOGGER.info(msg);
-		System.out.println(msg);
+		//System.out.println(msg);
 	}
 	
 	@SuppressWarnings("rawtypes")
