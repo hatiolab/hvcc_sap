@@ -11,6 +11,7 @@ import java.util.Map;
 import org.jboss.logging.Logger;
 
 import com.hvcc.sap.MesSearcher;
+import com.hvcc.sap.MesUpdater;
 import com.hvcc.sap.RfcInvoker;
 
 /**
@@ -40,14 +41,27 @@ public class ActualToSap {
 	}
 	
 	/**
-	 * select from MES Actual Table
+	 * Select from MES Actual Table
 	 * 
 	 * @throws Exception
 	 */
 	public List<Map<String, Object>> selectActuals() throws Exception {
-		String sql = "SELECT '001' AS IFSEQ, 'GT10' AS WERKS, '6ATLA' AS ARBPL, '1' AS LOGRP, 'A1' AS VAART, 'F124ATBAA05' AS MATNR, '20140205' AS BUDAT, '20140205' AS PDDAT, 100 AS ERFMG FROM DUAL"; 
+		String sql = "SELECT MES_ID, IFSEQ, WERKS, ARBPL, TRIM(LOGRP) LOGRP, VAART, MATNR, BUDAT, PDDAT, ERFMG FROM INF_SAP_ACTUAL WHERE IFRESULT = 'N'"; 
 		return new MesSearcher().search(sql);
 	}
+	
+	/**
+	 * Update status flag MES Scrap table
+	 * 
+	 * @param mesId
+	 * @param status
+	 * @return 
+	 * @throws Exception
+	 */
+	public boolean updateStatus(String mesId, String status) throws Exception {
+		String sql = "UPDATE INF_SAP_ACTUAL SET IFRESULT = '" + status + "' WHERE MES_ID = '" + mesId + "'";
+		return new MesUpdater().update(sql);
+	}	
 	
 	/**
 	 * 실행 
@@ -55,21 +69,39 @@ public class ActualToSap {
 	 * @throws Exception
 	 */
 	public void execute() {
-		Map<String, Object> output = null;
-
 		try {
-			List<Map<String, Object>> list = this.selectActuals();
-			Map<String, Object> inputParam = list.get(0);
-			this.showMap(inputParam);
-			output = this.callRfc(inputParam);
-			this.info(output.get("EV_IFSEQ").toString());
-			
-		} catch (Exception e) {
-			System.out.println("Failed to Actual Interface");
-			e.printStackTrace();
-			LOGGER.error(e);
-		}	
+			List<Map<String, Object>> actuals = this.selectActuals();
+			if(!actuals.isEmpty()) {
+				int actualCount = actuals.size();
+				for(int i = 0 ; i < actualCount ; i++) {
+					Map<String, Object> inputParam = actuals.get(i);
+					String mesId = (String)inputParam.remove("MES_ID");
+					Map<String, Object> output = this.executeRecord(mesId, inputParam);
+					this.info(output.get("EV_IFSEQ").toString());
+				}
+			} else {
+				this.info("No scrap data to interface!");
+			}
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			LOGGER.error(ex);
+		}
 	}
+	
+	private Map<String, Object> executeRecord(String mesId, Map<String, Object> inputParam) throws Exception {
+		this.showMap(inputParam);
+		Map<String, Object> output = null;
+		
+		try {
+			output = this.callRfc(inputParam);
+			this.updateStatus(mesId, "Y");
+		} catch (Exception e) {
+			LOGGER.error("Error - MES_ID : " + mesId + ", MSG : " + e.getMessage());
+			this.updateStatus(mesId, "E");
+		}
+		
+		return output;
+	}	
 	
 	private void info(String msg) {
 		LOGGER.info(msg);

@@ -15,13 +15,15 @@ import com.hvcc.sap.MesUpdater;
 import com.hvcc.sap.RfcInvoker;
 
 /**
+ * TODO
+ * 계획 변경시 MES에서 SAP로 보낸다.
  * 
  * @author Shortstop
  */
-public class ScrapToSap {
-
-	private static final Logger LOGGER = Logger.getLogger(ScrapToSap.class);
-	public static final String RFC_FUNC_NAME = "ZPPG_EA_INLINE_SCRAP";
+public class ChangePlanToSap {
+	
+	private static final Logger LOGGER = Logger.getLogger(ChangePlanToSap.class);
+	public static final String RFC_FUNC_NAME = "ZPPG_EA_CHANGE_PLAN";
 	
 	/**
 	 * call rfc 
@@ -35,7 +37,7 @@ public class ScrapToSap {
 		outputParams.add("EV_IFSEQ");
 		
 		LOGGER.info("RFC [" + RFC_FUNC_NAME + "] Call!");
-		Map<String, Object> output = new RfcInvoker().callFunction(RFC_FUNC_NAME, "IS_SCRAP", inputParams, outputParams);
+		Map<String, Object> output = new RfcInvoker().callFunction(RFC_FUNC_NAME, "IT_PLAN", inputParams, outputParams);
 		return output;
 	}
 	
@@ -58,7 +60,7 @@ public class ScrapToSap {
 	 * @throws Exception
 	 */
 	public boolean updateStatus(String mesId, String status) throws Exception {
-		String sql = "UPDATE INF_SAP_SCRAP SET IFRESULT = '" + status + "' WHERE MES_ID = '" + mesId + "'";
+		String sql = "UPDATE INF_SAP_SCRAP SET MES_STAT = '" + status + "' WHERE MES_ID = '" + mesId + "'";
 		return new MesUpdater().update(sql);
 	}
 	
@@ -123,6 +125,6 @@ public class ScrapToSap {
 	}
 	
 	public static void main(String[] args) {
-		new ScrapToSap().execute();
+		new ChangePlanToSap().execute();
 	}
 }
