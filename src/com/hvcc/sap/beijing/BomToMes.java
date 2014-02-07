@@ -21,8 +21,8 @@ import com.hvcc.sap.RfcSearcher;
 public class BomToMes {
 	
 	private static final Logger LOGGER = Logger.getLogger(ParameterToMes.class);
-	public static final String INSERT_PRODUCT_SQL = "INSERT INTO INF_SAP_PRODUCT(IFSEQ, WERKS, MATNR, MAKTX, MTART, MEINS, MATKL, BESKZ, SOBSL, MMSTA, BSTRF, DATUV, DATUB, ERDAT, ERZET, ERNAM, AEDAT, AEZET, AENAM, IFRESULT, IFFMSG, MES_STAT, MES_UPDDT) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATE)";
-	public static final String INSERT_BOM_SQL = "INSERT INTO INF_SAP_BOM(IFSEQ, WERKS, MATNR, STLAN, STLAL, IDNRK, MENGE, MEINS, DATUV, DATUB, ERDAT, ERZET, ERNAM, AEDAT, AEZET, AENAM, IFRESULT, IFFMSG, MES_STAT, MES_UPDDT) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATE)";
+	public static final String INSERT_PRODUCT_SQL = "INSERT INTO INF_SAP_PRODUCT(IFSEQ, WERKS, MATNR, MAKTX, MTART, MEINS, MATKL, BESKZ, SOBSL, MMSTA, BSTRF, DATUV, DATUB, ERDAT, ERZET, ERNAM, AEDAT, AEZET, AENAM, IFRESULT, IFFMSG, MES_STAT, MES_UPDDT) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATE)";
+	public static final String INSERT_BOM_SQL = "INSERT INTO INF_SAP_BOM(IFSEQ, WERKS, MATNR, STLAN, STLAL, IDNRK, MENGE, MEINS, DATUV, DATUB, ERDAT, ERZET, ERNAM, AEDAT, AEZET, AENAM, IFRESULT, IFFMSG, MES_STAT, MES_UPDDT) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATE)";
 	public static final String RFC_FUNC_NAME = "ZPPG_EA_MAT_BOM_MASTER";
 	public static final String RFC_OUT_TABLE1 = "ET_MAT";
 	public static final String RFC_OUT_TABLE2 = "ET_BOM";
@@ -36,8 +36,8 @@ public class BomToMes {
 	public Map<String, Object> callRfc() throws Exception {
 		Map<String, Object> inputParams = new HashMap<String, Object>();
 		inputParams.put("IV_WERKS", "GT10");
-		inputParams.put("IV_FDATE", "20140205");
-		inputParams.put("IV_TDATE", "20140205");
+		inputParams.put("IV_FDATE", "20140204");
+		inputParams.put("IV_TDATE", "20140204");
 		// 처음 요청일 경우 blank, 재전송 요청일 경우 'X'
 		inputParams.put("IV_CHECK", "");
 
@@ -107,6 +107,12 @@ public class BomToMes {
 		for(int i = 0 ; i < resultCnt ; i++) {
 			Map<String, Object> record = (Map<String, Object>)results.get(i);
 			this.showMap(record);
+			
+			if(this.isEmpty(record.get("IFSEQ")) || this.isEmpty(record.get("WERKS")) || this.isEmpty(record.get("STLAN")) || this.isEmpty(record.get("STLAL")) || this.isEmpty(record.get("IDNRK"))) {
+				LOGGER.warn("Required field is empty!");
+				continue;
+			}
+
 			List<Object> parameter = new ArrayList<Object>();
 			parameter.add(record.get("IFSEQ"));
 			parameter.add(record.get("WERKS"));
@@ -124,7 +130,7 @@ public class BomToMes {
 			parameter.add(record.get("AEDAT"));
 			parameter.add(record.get("AEZET"));
 			parameter.add(record.get("AENAM"));
-			parameter.add(record.get("IFRESULT"));
+			parameter.add(this.isEmpty(record.get("IFRESULT")) ? "S" : record.get("IFRESULT"));
 			parameter.add(record.get("IFMSG"));
 			parameter.add("N");
 			parameters.add(parameter);
@@ -164,7 +170,11 @@ public class BomToMes {
 	
 	private void info(String msg) {
 		LOGGER.info(msg);
-		System.out.println(msg);
+		//System.out.println(msg);
+	}
+	
+	private boolean isEmpty(Object obj) {
+		return (obj == null || obj.toString().equals("")) ? true : false;
 	}
 	
 	@SuppressWarnings("rawtypes")

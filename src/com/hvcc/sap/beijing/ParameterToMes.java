@@ -22,7 +22,7 @@ import com.hvcc.sap.RfcSearcher;
 public class ParameterToMes {
 	
 	private static final Logger LOGGER = Logger.getLogger(ParameterToMes.class);
-	public static final String INSERT_SQL = "INSERT INTO INF_SAP_PARAMETER(IFSEQ, WERKS, ZPTYP, ZDEPT, ARBPL, ZMACN, MATNR, VERID, ZMKEY, ZUPH, LOTQT, VGW03, ERDAT, ERZET, ERNAM, AEDAT, AEZET, AENAM, IFRESULT, IFFMSG, MES_STAT, MES_UPDDT) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATE)";
+	public static final String INSERT_SQL = "INSERT INTO INF_SAP_PARAMETER(IFSEQ, WERKS, ZPTYP, ZDEPT, ARBPL, ZMACN, MATNR, VERID, ZMKEY, ZUPH, LOTQT, VGW03, MEINS, ERDAT, ERZET, ERNAM, AEDAT, AEZET, AENAM, IFRESULT, IFFMSG, MES_STAT, MES_UPDDT) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, SYSDATE)";
 	public static final String RFC_FUNC_NAME = "ZPPG_EA_PLAN_PARAM";
 	public static final String RFC_OUT_TABLE = "ET_PARAM";
 	
@@ -35,8 +35,8 @@ public class ParameterToMes {
 	public Map<String, Object> callRfc() throws Exception {
 		Map<String, Object> inputParams = new HashMap<String, Object>();
 		inputParams.put("IV_WERKS", "GT10");
-		inputParams.put("IV_FDATE", "20140205");
-		inputParams.put("IV_TDATE", "20140205");
+		inputParams.put("IV_FDATE", "20140201");
+		inputParams.put("IV_TDATE", "20140225");
 		// 처음 요청일 경우 blank, 재전송 요청일 경우 'X'
 		inputParams.put("IV_CHECK", "");
 
@@ -58,9 +58,21 @@ public class ParameterToMes {
 	public int updateToMes(String ifResult, String fmsg, List<Map<String, Object>> results) throws Exception {
 		List<List<Object>> parameters = new ArrayList<List<Object>>();
 		int resultCnt = results.size();
+		
 		for(int i = 0 ; i < resultCnt ; i++) {
 			Map<String, Object> record = (Map<String, Object>)results.get(i);
 			this.showMap(record);
+			
+			if(this.isEmpty(record.get("IFSEQ")) || 
+				this.isEmpty(record.get("WERKS")) || 
+				this.isEmpty(record.get("ZPTYP")) || 
+				this.isEmpty(record.get("ZDEPT")) || 
+				this.isEmpty(record.get("ARBPL")) || 
+				this.isEmpty(record.get("ZMACN")) ||
+				this.isEmpty(record.get("MATNR"))) {
+				LOGGER.warn("Required field is empty!");
+				continue;
+			}			
 			List<Object> parameter = new ArrayList<Object>();
 			parameter.add(record.get("IFSEQ"));
 			parameter.add(record.get("WERKS"));
@@ -71,9 +83,10 @@ public class ParameterToMes {
 			parameter.add(record.get("MATNR"));
 			parameter.add(record.get("VERID"));
 			parameter.add(record.get("ZMKEY"));
-			parameter.add(record.get("ZUPH "));
+			parameter.add(record.get("ZUPH"));
 			parameter.add(record.get("LOTQT"));
-			parameter.add(record.get("VGW03"));
+			parameter.add(record.get("VGW01"));
+			parameter.add(record.get("MEINS"));
 			parameter.add(record.get("ERDAT"));
 			parameter.add(record.get("ERZET"));
 			parameter.add(record.get("ERNAM"));
@@ -117,7 +130,11 @@ public class ParameterToMes {
 	
 	private void info(String msg) {
 		LOGGER.info(msg);
-		System.out.println(msg);
+		//System.out.println(msg);
+	}
+	
+	private boolean isEmpty(Object obj) {
+		return (obj == null || obj.toString().equals("")) ? true : false; 
 	}
 	
 	@SuppressWarnings("rawtypes")
