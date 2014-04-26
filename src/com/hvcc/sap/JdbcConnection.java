@@ -13,15 +13,10 @@ import java.sql.DriverManager;
  */
 public class JdbcConnection implements IMesConnection {
 	
-	public static final String DRIVER = "oracle.jdbc.driver.OracleDriver";
-	public static final String URL = "jdbc:oracle:thin:@172.20.9.1:1521:HMES";
-	public static final String USER = "HVCCD_MES";
-	public static final String PASSWORD = "HVCCD_MES";
-	
 	@Override
 	public Connection getConnection() throws Exception {
-		Class.forName(DRIVER).newInstance();
-		Connection conn = DriverManager.getConnection(URL, USER, PASSWORD);
+		Class.forName(Constants.DB_DRIVER_CLASS).newInstance();
+		Connection conn = DriverManager.getConnection(Constants.DB_URL, Constants.DB_USER, Constants.DB_PASSWORD);
 		return conn;
 	}
 

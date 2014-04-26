@@ -4,24 +4,23 @@
 package com.hvcc.sap.beijing;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
-import org.jboss.logging.Logger;
+import java.util.logging.Logger;
 
 import com.hvcc.sap.MesSearcher;
 import com.hvcc.sap.MesUpdater;
 import com.hvcc.sap.RfcInvoker;
+import com.hvcc.sap.util.Utils;
 
 /**
- * Actual MES To SAP
+ * Actual Interface MES To SAP
  *  
  * @author Shortstop
  */
 public class ActualToSap {
 	
-	private static final Logger LOGGER = Logger.getLogger(ActualToSap.class);
+	private static final Logger LOGGER = Logger.getLogger(ActualToSap.class.getName());
 	public static final String RFC_FUNC_NAME = "ZPPG_EA_ACT_PROD";
 	
 	/**
@@ -32,7 +31,8 @@ public class ActualToSap {
 	 */
 	public Map<String, Object> callRfc(Map<String, Object> inputParams) throws Exception {
 		List<String> outputParams = new ArrayList<String>();
-		outputParams.add("ES_RESULT");
+		outputParams.add("EV_RESULT");
+		outputParams.add("EV_MSG");
 		outputParams.add("EV_IFSEQ");
 		
 		LOGGER.info("RFC [" + RFC_FUNC_NAME + "] Call!");
@@ -46,7 +46,7 @@ public class ActualToSap {
 	 * @throws Exception
 	 */
 	public List<Map<String, Object>> selectActuals() throws Exception {
-		String sql = "SELECT MES_ID, IFSEQ, WERKS, ARBPL, TRIM(LOGRP) LOGRP, VAART, MATNR, BUDAT, PDDAT, ERFMG FROM INF_SAP_ACTUAL WHERE IFRESULT = 'N'"; 
+		String sql = "SELECT * FROM (SELECT MES_ID, IFSEQ, WERKS, ARBPL, EQUNR, LOGRP, VAART, MATNR, CHARG, KUNNR, BUDAT, PDDAT, ERFMG, SERIAL_NO, LOT_NUMBER FROM INF_SAP_ACTUAL WHERE IFRESULT = 'N' ORDER BY MES_ISTDT ASC) WHERE ROWNUM <= 100"; 
 		return new MesSearcher().search(sql);
 	}
 	
@@ -55,75 +55,93 @@ public class ActualToSap {
 	 * 
 	 * @param mesId
 	 * @param status
+	 * @param msg
 	 * @return 
 	 * @throws Exception
 	 */
-	public boolean updateStatus(String mesId, String status) throws Exception {
-		String sql = "UPDATE INF_SAP_ACTUAL SET IFRESULT = '" + status + "' WHERE MES_ID = '" + mesId + "'";
-		return new MesUpdater().update(sql);
-	}	
-	
+	public boolean updateStatus(String mesId, String status, String msg) throws Exception {
+		String preparedSql = "UPDATE INF_SAP_ACTUAL SET IFRESULT = ?, IFFMSG = ? WHERE MES_ID = ?";
+		List parameters = new ArrayList();
+		List param = new ArrayList();
+		param.add(status);
+		param.add(msg);
+		param.add(mesId);
+		parameters.add(param);
+		int result = new MesUpdater().update(preparedSql, parameters);
+		return result > 0;
+	}
+		
 	/**
 	 * 실행 
 	 * 
 	 * @throws Exception
 	 */
 	public void execute() {
+		List<Map<String, Object>> actuals = null;
 		try {
-			List<Map<String, Object>> actuals = this.selectActuals();
-			if(!actuals.isEmpty()) {
-				int actualCount = actuals.size();
-				for(int i = 0 ; i < actualCount ; i++) {
-					Map<String, Object> inputParam = actuals.get(i);
-					String mesId = (String)inputParam.remove("MES_ID");
-					Map<String, Object> output = this.executeRecord(mesId, inputParam);
-					this.info(output.get("EV_IFSEQ").toString());
+			actuals = this.selectActuals();
+		} catch (Throwable th) {
+			LOGGER.severe(th.getMessage());
+			return;
+		}			
+			
+		if(actuals != null && !actuals.isEmpty()) {
+			int actualCount = actuals.size();
+				
+			for(int i = 0 ; i < actualCount ; i++) {
+				Map<String, Object> inputParam = actuals.get(i);
+				String mesId = (String)inputParam.remove("MES_ID");
+				Map<String, Object> output = this.executeRecord(mesId, inputParam);
+					
+				if(output != null) {
+					String ifseq = (String)output.get("EV_IFSEQ");
+					String evResult = (String)output.get("EV_RESULT");
+						
+					if(evResult != null && evResult.equalsIgnoreCase("S")) {
+						LOGGER.info("Actual IFSEQ : " + ifseq);
+					} else {
+						String evMsg = (String)output.get("EV_MSG");
+						LOGGER.info("Actual Error Message : " + evMsg);
+						
+						if(evMsg.length() > 250) 
+							evMsg = evMsg.substring(0, 250);
+						
+						try {
+							this.updateStatus(mesId, evResult, evMsg);
+						} catch (Throwable th) {
+							LOGGER.severe("Failed to update status, Error : " + th.getMessage());
+						}
+					}
 				}
-			} else {
-				this.info("No scrap data to interface!");
 			}
-		} catch (Exception ex) {
-			ex.printStackTrace();
-			LOGGER.error(ex);
+		} else {
+			LOGGER.info("No actual data to interface!");
 		}
 	}
 	
-	private Map<String, Object> executeRecord(String mesId, Map<String, Object> inputParam) throws Exception {
-		this.showMap(inputParam);
+	private Map<String, Object> executeRecord(String mesId, Map<String, Object> inputParam) {
+		Utils.mapToStr(inputParam);
 		Map<String, Object> output = null;
 		
 		try {
 			output = this.callRfc(inputParam);
-			this.updateStatus(mesId, "Y");
-		} catch (Exception e) {
-			LOGGER.error("Error - MES_ID : " + mesId + ", MSG : " + e.getMessage());
-			this.updateStatus(mesId, "E");
+			this.updateStatus(mesId, "Y", null);
+			
+		} catch (Throwable th) {
+			String msg = "Error - MES_ID : " + mesId + ", MSG : " + th.getMessage();
+			LOGGER.severe(msg);
+			
+			if(msg.length() > 250) 
+				msg = msg.substring(0, 250);
+			
+			try {
+				this.updateStatus(mesId, "E", msg);
+			} catch (Throwable e) {
+				LOGGER.severe("Failed to update status, Error : " + e.getMessage());
+			}
 		}
 		
 		return output;
-	}	
-	
-	private void info(String msg) {
-		LOGGER.info(msg);
-		System.out.println(msg);
 	}
 	
-	@SuppressWarnings("rawtypes")
-	private void showMap(Map map) {
-		StringBuffer buf = new StringBuffer();
-		Iterator iter = map.keySet().iterator();
-		while(iter.hasNext()) {
-			String key = (String)iter.next();
-			String value = (map.get(key) == null ? "" : map.get(key).toString());
-			buf.append(key);
-			buf.append(" : ");
-			buf.append(value);
-			buf.append(", ");
-		}
-		this.info(buf.toString());
-	}
-	
-	public static void main(String[] args) {
-		new ActualToSap().execute();
-	}
 }

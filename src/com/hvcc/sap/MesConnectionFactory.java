@@ -17,8 +17,7 @@ public class MesConnectionFactory {
 	
 	public Connection getConnection() throws Exception {
 		if(this.mesConn == null) {
-			//this.mesConn = new JndiConnection();
-			this.mesConn = new JdbcConnection();
+			this.mesConn = (IMesConnection)Class.forName(Constants.DB_CONNECTOR_CLASS).newInstance();
 		}
 		
 		return this.mesConn.getConnection();
