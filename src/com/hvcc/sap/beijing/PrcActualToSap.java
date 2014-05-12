@@ -18,9 +18,9 @@ import com.hvcc.sap.util.Utils;
  *  
  * @author Shortstop
  */
-public class ActualToSap {
+public class PrcActualToSap {
 	
-	private static final Logger LOGGER = Logger.getLogger(ActualToSap.class.getName());
+	private static final Logger LOGGER = Logger.getLogger(PrcActualToSap.class.getName());
 	public static final String RFC_FUNC_NAME = "ZPPG_EA_ACT_PROD";
 	
 	/**
@@ -46,7 +46,7 @@ public class ActualToSap {
 	 * @throws Exception
 	 */
 	public List<Map<String, Object>> selectActuals() throws Exception {
-		String sql = "SELECT * FROM (SELECT MES_ID, IFSEQ, WERKS, ARBPL, EQUNR, LOGRP, VAART, MATNR, CHARG, KUNNR, BUDAT, PDDAT, ERFMG, SERIAL_NO, LOT_NUMBER FROM INF_SAP_ACTUAL WHERE IFRESULT = 'N' ORDER BY MES_ISTDT ASC) WHERE ROWNUM <= 100"; 
+		String sql = "SELECT * FROM (SELECT IFSEQ, WERKS, ARBPL, EQUNR, LOGRP, VAART, MATNR, CHARG, KUNNR, BUDAT, PDDAT, ERFMG, SERIAL_NO, LOT_NUMBER FROM INF_SAP_PRC_ACTUAL WHERE IFRESULT = 'N' ORDER BY MES_ISTDT ASC) WHERE ROWNUM <= 100"; 
 		return new MesSearcher().search(sql);
 	}
 	
@@ -60,7 +60,7 @@ public class ActualToSap {
 	 * @throws Exception
 	 */
 	public boolean updateStatus(String mesId, String status, String msg) throws Exception {
-		String preparedSql = "UPDATE INF_SAP_ACTUAL SET IFRESULT = ?, IFFMSG = ? WHERE MES_ID = ?";
+		String preparedSql = "UPDATE INF_SAP_PRC_ACTUAL SET IFRESULT = ?, IFFMSG = ? WHERE IFSEQ = ?";
 		List parameters = new ArrayList();
 		List param = new ArrayList();
 		param.add(status);
@@ -90,7 +90,7 @@ public class ActualToSap {
 				
 			for(int i = 0 ; i < actualCount ; i++) {
 				Map<String, Object> inputParam = actuals.get(i);
-				String mesId = (String)inputParam.remove("MES_ID");
+				String mesId = (String)inputParam.get("IFSEQ");
 				Map<String, Object> output = this.executeRecord(mesId, inputParam);
 					
 				if(output != null) {

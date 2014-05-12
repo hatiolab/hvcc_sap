@@ -90,7 +90,8 @@ public class PlanToMes {
 			parameter.add(record.get("AEDAT"));
 			parameter.add(record.get("AEZET"));
 			parameter.add(record.get("AENAM"));
-			parameter.add(record.get("IFRESULT"));
+			//parameter.add(record.get("IFRESULT"));
+			parameter.add("Y");
 			parameter.add(record.get("IFMSG"));
 			parameter.add("N");
 			parameters.add(parameter);

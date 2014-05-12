@@ -1,10 +1,11 @@
 package com.hvcc.sap;
 
-import java.util.Calendar;
 import java.util.Date;
 import java.util.logging.Logger;
 
 import com.hvcc.sap.beijing.ActualToSap;
+import com.hvcc.sap.beijing.MoveToSap;
+import com.hvcc.sap.beijing.PrcActualToSap;
 import com.hvcc.sap.beijing.ProductToMes;
 import com.hvcc.sap.beijing.ParameterToMes;
 import com.hvcc.sap.beijing.PlanToMes;
@@ -21,33 +22,44 @@ public class TaskThread extends Thread {
 	public void run() {
 		
 		while(running) {
-			this.sleepForSecs(Constants.EXE_INTERVAL);
-			
+			this.sleepForSecs(Constants.EXE_INTERVAL);			
 			count++;
 
 			if(this.checkSap()) {
+				// Processing line actual
+				if(count % 10 == 0) {
+					this.ifcPrcActual();
+				
+				// plan
+				} else if(count % 13 == 0) {
+					this.ifcPlan();
+					
+				// Packing move
+				} else if(count % 15 == 0) {
+					this.ifcMove();
+					
 				// product 
-				if(count % 3 == 0) {
+				} else if(count % 47 == 0) {
 					this.ifcProduct();
 				
 				// parameter
-				} else if(count % 5 == 0) {
+				} else if(count % 49 == 0) {
 					this.ifcParameter();
 					
-				// plan
-				} else if(count % 7 == 0) {
-					this.ifcPlan();
-					
 				// scrap
-				} else if(count % 9 == 0) {
+				} else if(count % 51 == 0) {
 					this.ifcScrap();
 					
 				// GC
-				} else if(count % 11 == 0) {
+				} else if(count % 55 == 0) {
 					this.garbageCollect();
-					count = 0;
 					
-				// actual
+				// Reset count
+				} else if(count % 61 == 0) {
+					count = 0;
+					this.ifcActual();
+					
+				// Assembly line actual
 				} else {
 					this.ifcActual();
 				}
@@ -78,10 +90,23 @@ public class TaskThread extends Thread {
 	}
 	
 	private void ifcActual() {
-		LOGGER.info("Actual ....");
+		LOGGER.info("Assy Actual ....");
 		ActualToSap actual = new ActualToSap();
 		actual.execute();
 	}
+	
+	private void ifcPrcActual() {
+		LOGGER.info("Processing Actual ....");
+		PrcActualToSap actual = new PrcActualToSap();
+		actual.execute();
+	}
+	
+	private void ifcMove() {
+		this.sleepForSecs(Constants.EXE_RFC_INTERVAL);
+		LOGGER.info("Move ....");
+		MoveToSap move = new MoveToSap();
+		move.execute();
+	}	
 	
 	private void ifcScrap() {
 		this.sleepForSecs(Constants.EXE_RFC_INTERVAL);
@@ -126,4 +151,5 @@ public class TaskThread extends Thread {
         str[1] = toDateStr;
         return str;
 	}
+	 
 }

@@ -14,14 +14,14 @@ import com.hvcc.sap.RfcInvoker;
 import com.hvcc.sap.util.Utils;
 
 /**
- * Actual Interface MES To SAP
+ * Material Moving Interface MES To SAP
  *  
  * @author Shortstop
  */
-public class ActualToSap {
+public class MoveToSap {
 	
 	private static final Logger LOGGER = Logger.getLogger(ActualToSap.class.getName());
-	public static final String RFC_FUNC_NAME = "ZPPG_EA_ACT_PROD";
+	public static final String RFC_FUNC_NAME = "ZMMG_EA_MES_MVT";
 	
 	/**
 	 * call rfc 
@@ -32,11 +32,10 @@ public class ActualToSap {
 	public Map<String, Object> callRfc(Map<String, Object> inputParams) throws Exception {
 		List<String> outputParams = new ArrayList<String>();
 		outputParams.add("EV_RESULT");
-		outputParams.add("EV_MSG");
-		outputParams.add("EV_IFSEQ");
+		outputParams.add("EV_MESSAGE");
 		
 		LOGGER.info("RFC [" + RFC_FUNC_NAME + "] Call!");
-		Map<String, Object> output = new RfcInvoker().callFunction(RFC_FUNC_NAME, "IS_ACT", inputParams, outputParams);
+		Map<String, Object> output = new RfcInvoker().callFunction(RFC_FUNC_NAME, "CS_MOVE", inputParams, outputParams);
 		return output;
 	}
 	
@@ -45,8 +44,8 @@ public class ActualToSap {
 	 * 
 	 * @throws Exception
 	 */
-	public List<Map<String, Object>> selectActuals() throws Exception {
-		String sql = "SELECT * FROM (SELECT MES_ID, IFSEQ, WERKS, ARBPL, EQUNR, LOGRP, VAART, MATNR, CHARG, KUNNR, BUDAT, PDDAT, ERFMG, SERIAL_NO, LOT_NUMBER FROM INF_SAP_ACTUAL WHERE IFRESULT = 'N' ORDER BY MES_ISTDT ASC) WHERE ROWNUM <= 100"; 
+	public List<Map<String, Object>> selectActuals() throws Exception {		
+		String sql = "SELECT * FROM (SELECT IFSEQ, WERKS, MATNR, MENGE, ARBPL, BUDAT, MJAHR, MBLNR, VAART, LABEL FROM INF_SAP_MOVE WHERE IFRESULT = 'N' ORDER BY MES_ISTDT ASC) WHERE ROWNUM <= 50"; 
 		return new MesSearcher().search(sql);
 	}
 	
@@ -60,7 +59,7 @@ public class ActualToSap {
 	 * @throws Exception
 	 */
 	public boolean updateStatus(String mesId, String status, String msg) throws Exception {
-		String preparedSql = "UPDATE INF_SAP_ACTUAL SET IFRESULT = ?, IFFMSG = ? WHERE MES_ID = ?";
+		String preparedSql = "UPDATE INF_SAP_MOVE SET IFRESULT = ?, IFMESSAGE = ? WHERE IFSEQ = ?";
 		List parameters = new ArrayList();
 		List param = new ArrayList();
 		param.add(status);
@@ -90,17 +89,16 @@ public class ActualToSap {
 				
 			for(int i = 0 ; i < actualCount ; i++) {
 				Map<String, Object> inputParam = actuals.get(i);
-				String mesId = (String)inputParam.remove("MES_ID");
+				String mesId = (String)inputParam.remove("IFSEQ");
 				Map<String, Object> output = this.executeRecord(mesId, inputParam);
 					
 				if(output != null) {
-					String ifseq = (String)output.get("EV_IFSEQ");
 					String evResult = (String)output.get("EV_RESULT");
 						
 					if(evResult != null && evResult.equalsIgnoreCase("S")) {
-						LOGGER.info("Actual IFSEQ : " + ifseq);
+						LOGGER.info("Move Result : " + evResult);
 					} else {
-						String evMsg = (String)output.get("EV_MSG");
+						String evMsg = (String)output.get("EV_MESSAGE");
 						LOGGER.info("Actual Error Message : " + evMsg);
 						
 						if(evMsg.length() > 250) 
@@ -115,7 +113,7 @@ public class ActualToSap {
 				}
 			}
 		} else {
-			LOGGER.info("No actual data to interface!");
+			LOGGER.info("No move data to interface!");
 		}
 	}
 	

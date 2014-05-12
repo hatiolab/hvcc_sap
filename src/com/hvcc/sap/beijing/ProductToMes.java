@@ -106,7 +106,7 @@ public class ProductToMes {
 		
 		for(int i = 0 ; i < resultCnt ; i++) {
 			Map<String, Object> record = (Map<String, Object>)results.get(i);
-			Utils.mapToStr(record);
+			LOGGER.info(Utils.mapToStr(record));
 			List<Object> parameter = new ArrayList<Object>();
 			parameter.add(record.get("IFSEQ"));
 			parameter.add(record.get("WERKS"));
@@ -126,7 +126,8 @@ public class ProductToMes {
 			parameter.add(record.get("AEDAT"));
 			parameter.add(record.get("AEZET"));
 			parameter.add(record.get("AENAM"));
-			parameter.add(record.get("IFRESULT"));
+			//parameter.add(record.get("IFRESULT"));
+			parameter.add("Y");
 			parameter.add(record.get("IFMSG"));
 			parameter.add("N");
 			parameters.add(parameter);
@@ -181,7 +182,7 @@ public class ProductToMes {
 		
 		for(int i = 0 ; i < resultCnt ; i++) {
 			Map<String, Object> record = (Map<String, Object>)results.get(i);
-			Utils.mapToStr(record);
+			LOGGER.info(Utils.mapToStr(record));
 			List<Object> parameter = new ArrayList<Object>();
 			parameter.add(record.get("IFSEQ"));
 			parameter.add(record.get("WERKS"));
@@ -199,7 +200,8 @@ public class ProductToMes {
 			parameter.add(record.get("AEDAT"));
 			parameter.add(record.get("AEZET"));
 			parameter.add(record.get("AENAM"));
-			parameter.add(record.get("IFRESULT"));
+			//parameter.add(record.get("IFRESULT"));
+			parameter.add("Y");
 			parameter.add(record.get("IFMSG"));
 			parameter.add("N");
 			parameters.add(parameter);
@@ -254,7 +256,7 @@ public class ProductToMes {
 		
 		for(int i = 0 ; i < resultCnt ; i++) {
 			Map<String, Object> record = (Map<String, Object>)results.get(i);
-			Utils.mapToStr(record);
+			LOGGER.info(Utils.mapToStr(record));
 			List<Object> parameter = new ArrayList<Object>();
 			// IFSEQ,WERKS,MATNR,CHARG,NAME1,LVORM,ERDAT,ERZET,ERNAM,AEDAT,AEZET,AENAM,IFRESULT,IFFMSG,MES_STAT,MES_ISTDT
 			parameter.add(record.get("IFSEQ"));
@@ -269,7 +271,8 @@ public class ProductToMes {
 			parameter.add(record.get("AEDAT"));
 			parameter.add(record.get("AEZET"));
 			parameter.add(record.get("AENAM"));
-			parameter.add(record.get("IFRESULT"));
+			//parameter.add(record.get("IFRESULT"));
+			parameter.add("Y");
 			parameter.add(record.get("IFMSG"));
 			parameter.add("N");
 			parameters.add(parameter);

@@ -139,7 +139,7 @@ public class ScrapToSap {
 				msg = msg.substring(0, 250);
 			
 			try {
-				this.updateStatus(mesId, "E", msg);
+				this.updateStatus(mesId, "F", msg);
 			} catch (Throwable e) {
 				LOGGER.severe("Failed to update status, Error : " + e.getMessage());
 			}		

@@ -97,7 +97,7 @@ public class ParameterToMes {
 		
 		for(int i = 0 ; i < resultCnt ; i++) {
 			Map<String, Object> record = (Map<String, Object>)results.get(i);
-			Utils.mapToStr(record);
+			LOGGER.info(Utils.mapToStr(record));
 			// IFSEQ, WERKS, ZPTYP, ZDEPT, ARBPL, ZMACN, ZKEY, KTEXT, ZTEXT, ERDAT, ERZET, ERNAM, AEDAT, AEZET, AENAM, IFRESULT, IFFMSG, MES_STAT, MES_ISTDT
 			List<Object> parameter = new ArrayList<Object>();
 			parameter.add(record.get("IFSEQ"));
@@ -115,7 +115,8 @@ public class ParameterToMes {
 			parameter.add(record.get("AEDAT"));
 			parameter.add(record.get("AEZET"));
 			parameter.add(record.get("AENAM"));
-			parameter.add(record.get("IFRESULT"));
+			//parameter.add(record.get("IFRESULT"));
+			parameter.add("Y");
 			parameter.add(record.get("IFMSG"));
 			parameter.add("N");
 			parameters.add(parameter);
@@ -170,7 +171,7 @@ public class ParameterToMes {
 		
 		for(int i = 0 ; i < resultCnt ; i++) {
 			Map<String, Object> record = (Map<String, Object>)results.get(i);
-			Utils.mapToStr(record);
+			LOGGER.info(Utils.mapToStr(record));
 			// IFSEQ, WERKS, ZPTYP, ZDEPT, ARBPL, ZMACN, MATNR, VERID, ZMKEY, ZUPH, LOTQT, VGW01, MEINS, ERDAT, ERZET, ERNAM, AEDAT, AEZET, AENAM, IFRESULT, IFFMSG, MES_STAT, MES_ISTDT
 			List<Object> parameter = new ArrayList<Object>();
 			parameter.add(record.get("IFSEQ"));
@@ -192,7 +193,8 @@ public class ParameterToMes {
 			parameter.add(record.get("AEDAT"));
 			parameter.add(record.get("AEZET"));
 			parameter.add(record.get("AENAM"));
-			parameter.add(record.get("IFRESULT"));
+			//parameter.add(record.get("IFRESULT"));
+			parameter.add("Y");
 			parameter.add(record.get("IFMSG"));
 			parameter.add("N");
 			parameters.add(parameter);
